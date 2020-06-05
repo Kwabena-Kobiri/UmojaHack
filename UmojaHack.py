@@ -2,7 +2,129 @@
 from tkinter import *
 
 #FUNCTIONS FOR MANIPULATING GUI
+features = [ ]
 
+def extract():
+    features.clear()
+    features.append(ID1.get())
+    features.append(Area1.get())
+    features.append(climate_aet1.get())
+    features.append(climate_def1.get())
+    features.append(climate_pdsi1.get())
+    features.append(climate_pet1.get())
+    features.append(climate_pr1.get())
+    features.append(climate_ro1.get())
+    features.append(climate_soil1.get())
+    features.append(climate_srad1.get())
+    features.append(climate_swe1.get())
+    features.append(climate_tmmn1.get())
+    features.append(climate_tmmx1.get())
+    features.append(climate_vap1.get())
+    features.append(climate_vpd1.get())
+    features.append(climate_vs1.get())
+    features.append(elevation1.get())
+    features.append(landcover_01.get())
+    features.append(landcover_11.get())
+    features.append(landcover_21.get())
+    features.append(landcover_31.get())
+    features.append(landcover_41.get())
+    features.append(landcover_51.get())
+    features.append(landcover_61.get())
+    features.append(landcover_71.get())
+    features.append(landcover_81.get())
+    features.append(population_density1.get())
+    features.append(precipitation1.get())
+    print(features)
+
+def analyze():
+    ID_output['test'] = features[0]
+    #Modules imported for Analysis
+    import pandas as pd
+    from sklearn.linear_model import RidgeCV
+    from sklearn.ensemble import RandomForestRegressor
+    from sklearn.metrics import mean_squared_error, r2_score
+    from matplotlib import pyplot as plt
+    import seaborn as sns
+
+    test = pd.read_csv('E:/L300 SECOND SEM/CSCD 312 - INTRO TO ARTIFICIAL INTELLIGENCE/BREAST CANCER/test .csv', parse_dates=['date'])
+    train = pd.read_csv('E:/L300 SECOND SEM/CSCD 312 - INTRO TO ARTIFICIAL INTELLIGENCE/BREAST CANCER/train (1).csv', parse_dates=['date'])
+
+    #Data split for validation
+    train_all = train.copy().dropna()
+    train = train_all.loc[train_all.date < '2011-01-01']
+    valid = train_all.loc[train_all.date > '2011-01-01']
+    print(train.shape, valid.shape)
+
+    # Define input and output columns
+    in_cols = train.columns[6:]
+    target_col = 'burn_area'
+    in_cols
+
+    # Get our X and y training and validation sets ready
+    X_train, y_train = train[in_cols], train[target_col]
+    X_valid, y_valid = valid[in_cols], valid[target_col]
+
+    # Create and fit the model
+    model = RidgeCV()
+    model.fit(X_train, y_train)
+
+    # Make predictions
+    preds = model.predict(X_valid)
+    #preds = model.predict(features[2:])
+
+    # Score
+    mean_squared_error(y_valid, preds)**0.5 # RMSE - should match Zindi score. Lower is better
+
+    # So we need to predict the burn area for each row in test. 
+
+    # Add the same features to test as we did to train:
+    #test['month'] = test.date.dt.month
+    #test['year'] = test.date.dt.year
+
+    # Get predictions
+    #preds = model.predict(test[in_cols].fillna(0)) # fillna(0) here could be improved by examining the missing data and filling more appropriately.
+    #preds = model.predict(features[2:]) - mine
+    preds = model.predict(test[features[2:]].fillna(0))
+
+    # Add to submission dataframe
+    #ss['Prediction'] = preds
+    prediction_output['test'] = preds
+    #ID_output['test'] = features[0]
+
+
+    # View
+    #ss.head()
+
+def clear():
+    ID1.delete(0, END)
+    Area1.delete(0, END)
+    climate_aet1.delete(0, END)
+    climate_def1.delete(0, END)
+    climate_pdsi1.delete(0, END)
+    climate_pet1.delete(0, END)
+    climate_pr1.delete(0, END)
+    climate_ro1.delete(0, END)
+    climate_soil1.delete(0, END)
+    climate_srad1.delete(0, END)
+    climate_swe1.delete(0, END)
+    climate_tmmn1.delete(0, END)
+    climate_tmmx1.delete(0, END)
+    climate_vap1.delete(0, END)
+    climate_vpd1.delete(0, END)
+    climate_vs1.delete(0, END)
+    elevation1.delete(0, END)
+    landcover_01.delete(0, END)
+    landcover_11.delete(0, END)
+    landcover_21.delete(0, END)
+    landcover_31.delete(0, END)
+    landcover_41.delete(0, END)
+    landcover_51.delete(0, END)
+    landcover_61.delete(0, END)
+    landcover_71.delete(0, END)
+    landcover_81.delete(0, END)
+    population_density1.delete(0, END)
+    precipitation1.delete(0, END)
+    print(features)
 
 #WIDGETS FOR GUI 
 window = Tk()
@@ -72,8 +194,8 @@ climate_swe1.grid(row=12, column=1, sticky=W)
 
 climate_tmmn = Label(window, text='climate_tmmn', padx='5px',pady='5px')
 climate_tmmn.grid(row=13, column=0, sticky=E)
-climate_tmmn = Entry(window)
-climate_tmmn.grid(row=13, column=1, sticky=W)
+climate_tmmn1 = Entry(window)
+climate_tmmn1.grid(row=13, column=1, sticky=W)
 
 climate_tmmx = Label(window, text='climate_tmmx', padx='5px',pady='5px')
 climate_tmmx.grid(row=14, column=0, sticky=E, padx='10px')
@@ -158,12 +280,16 @@ precipitation1.grid(row=15, column=3, sticky=W)
 
 #BUTTONS FOR FEATURE EXTRACTION AND ANALYSIS
 extract_btn = Button(window, text='Extract features', padx='5px', pady='5px', 
-fg='white', bg='#1e9699', font=('bold', 11))
+fg='white', bg='#1e9699', font=('bold', 11), command=extract)
 extract_btn.grid(row=17, column=1, padx='10px', pady='15px')
 
 analyze_btn = Button(window, text='Analyze features', padx='5px', pady='5px', 
-fg='white', bg='#1e9688', font=('bold', 11))
-analyze_btn.grid(row=17, column=3)
+fg='white', bg='#1e9688', font=('bold', 11), command=analyze)
+analyze_btn.grid(row=17, column=2, padx='10px', pady='15px')
+
+clear_btn = Button(window, text='Clear All', padx='5px', pady='5px', 
+fg='white', bg='#1e9688', font=('bold', 11), command=clear)
+clear_btn.grid(row=17, column=3, padx='10px', pady='15px', sticky=EW)
 
 #ANALYSIS RESULTS
 Results_text = Frame(window, relief=RAISED, bd=3, padx='5px', pady='5px', bg='#8e2de2')
